@@ -28,6 +28,9 @@ dependencies:
   '@sofkau/ddd':
     specifier: 1.0.0-alpha.11
     version: 1.0.0-alpha.11
+  dotenv:
+    specifier: ^16.0.3
+    version: 16.0.3
   kafkajs:
     specifier: ^2.2.4
     version: 2.2.4
