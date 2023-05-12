@@ -1,0 +1,179 @@
+version: '3.9'
+
+services:
+
+  mongodb:
+    image: mongo
+    restart: always
+    container_name: MongoDB
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - ./data/mongo:/data/db
+
+  # redisdb:
+  #   image: redis
+  #   restart: always
+  #   container_name: Redis
+  #   ports:
+  #     - 6379:6379
+  #   volumes:
+  #     - ./data/redis:/data
+
+  postgres:
+    image: postgres
+    restart: always
+    container_name: PostgreSQL
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
+      POSTGRES_HOST_AUTH_METHOD: md5
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+
+  # mysql:
+  #   image: mysql
+  #   restart: always
+  #   container_name: MySQL
+  #   ports:
+  #     - 3306:3306
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: password
+  #     MYSQL_PASSWORD: password
+  #     MYSQL_USER: jalf
+  #   volumes:
+  #     - ./data/mysql:/var/lib/mysql
+
+  # mariadb:
+  #   image: mariadb
+  #   restart: always
+  #   container_name: MariaDB
+  #   ports:
+  #     - 3307:3306
+  #   environment:
+  #     MARIADB_ROOT_PASSWORD: password
+  #   volumes:
+  #     - ./data/mariadb:/var/lib/mysql
+
+  # rabbitmq:
+  #   image: rabbitmq
+  #   restart: always
+  #   container_name: RabbitMQ
+  #   ports:
+  #     - 5672:5672
+  #     - 15672:15672
+  #   volumes:
+  #     - ./data/rabbitmq:/var/lib/rabbitmq/mnesia/rabbit
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper
+    hostname: zookeeper
+    container_name: ZooKeeper
+    ports:
+      - 2181:2181
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  # zookeeper:
+  #   image: docker.io/bitnami/zookeeper:3.8
+  #   container_name: ZooKeeper
+  #   restart: always
+  #   ports:
+  #     - 2181:2181
+  #   volumes:
+  #     - "data-zookeeper:/bitnami"
+  #   environment:
+  #     - ALLOW_ANONYMOUS_LOGIN=yes
+
+  kafka:
+    image: wurstmeister/kafka:latest
+    restart: always
+    hostname: Kafka
+    container_name: Kafka
+    links:
+      - zookeeper
+    ports:
+      - 9091:9091
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: INTERNAL://:19091,EXTERNAL://:9091
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:19091,EXTERNAL://localhost:9091
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+
+  # kafka:
+  #   image: docker.io/bitnami/kafka:3.4
+  #   container_name: Kafka
+  #   restart: always
+  #   ports:
+  #     - 9092:9092
+  #   volumes:
+  #     - "data-kafka:/bitnami"
+  #   environment:
+  #     - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
+  #     - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://127.0.0.1:9092
+  #     - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+  #     - ALLOW_PLAINTEXT_LISTENER=yes
+  #   depends_on:
+  #     - zookeeper
+
+  # kafdrop:
+  #   image: obsidiandynamics/kafdrop
+  #   restart: always
+  #   container_name: Kafdrop
+  #   ports:
+  #     - 9099:9000
+  #   environment:
+  #     KAFKA_BROKERCONNECT: kafka:19091
+  #   depends_on:
+  #     - kafka
+
+  kowl:
+    image: quay.io/cloudhut/kowl:v1.3.1
+    container_name: kowl
+    restart: always
+    ports:
+      - 8080:8080
+    depends_on:
+      - kafka
+    environment:
+      - KAFKA_BROKERS=kafka:19091
+
+  # kafka-ui:
+  #   image: provectuslabs/kafka-ui:latest
+  #   container_name: KafkaUI
+  #   restart: always
+  #   ports:
+  #     - 8080:8080
+  #   environment:
+  #     KAFKA_CLUSTERS_0_NAME: local
+  #     KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:19091
+
+# volumes:
+#   data-rabbitmq:
+#     name: data-rabbitmq
+#     driver: local
+#   data-mariadb:
+#     name: data-mariadb
+#     driver: local
+#   data-postgres:
+#     name: data-postgres
+#     driver: local
+#   data-redis:
+#     name: data-redis
+#     driver: local
+#   data-mongo:
+#     name: data-mongo
+#     driver: local
+#   data-zookeeper:
+#     driver: local
+#   data-kafka:
+#     driver: local
