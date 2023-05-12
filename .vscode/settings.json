@@ -1,0 +1,6 @@
+{
+  "iridium.npm.packageManager": "pnpm",
+  "jest.autoRun": "off",
+  "eslint.packageManager": "pnpm",
+  "npm.packageManager": "pnpm"
+}
