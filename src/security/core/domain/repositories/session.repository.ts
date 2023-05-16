@@ -6,5 +6,4 @@ export interface SessionRepository<Entity extends SessionType = SessionType> {
   findOneBy(...where: any[]): Observable<Entity>;
   findAll(...options: any[]): Observable<Entity[]>;
   create(token: Entity): Observable<Entity>;
-  delete(token: string): Observable<boolean>;
 }

@@ -5,7 +5,6 @@ export interface UserRepository<Entity extends UserType = UserType> {
   findBy(...where: any[]): Observable<Entity[]>;
   findOneBy(...where: any[]): Observable<Entity>;
   findAll(...options: any[]): Observable<Entity[]>;
-  findById(userId: string): Observable<Entity>;
   create(user: Entity): Observable<Entity>;
   update(userId: string, user: Entity): Observable<Entity>;
   delete(userId: string): Observable<boolean>;

@@ -1,6 +1,6 @@
 import { IUseCase } from '@sofkau/ddd';
 import { Observable, tap } from 'rxjs';
-import { ISignedUpPublisher } from '../../domain/events/publishers/signed-up.publisher';
+import { ISignedUpPublisher } from '../../domain/events/publishers';
 import { SessionRepository, UserRepository } from '../../domain/repositories';
 import { CreateUserCommand, SignInCommand } from '../../domain/types';
 import { SignInUseCase, SignUpUseCase } from '../use-cases';

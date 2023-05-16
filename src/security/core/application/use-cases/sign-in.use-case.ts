@@ -7,7 +7,7 @@ import { SignInCommand, SignedInResponse, UserType } from '../../domain/types';
 import {
   EmailValueObject,
   PasswordValueObject,
-} from '../../domain/value-objects';
+} from '../../domain/value-objects/user';
 
 export class SignInUseCase
   implements IUseCase<SignInCommand, SignedInResponse>

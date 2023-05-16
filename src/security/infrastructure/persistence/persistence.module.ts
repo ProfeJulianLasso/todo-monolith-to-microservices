@@ -1,8 +1,15 @@
 import { Module } from '@nestjs/common';
+import { PostgresModule } from './databases/postgres';
+import {
+  RoleRepository,
+  SessionRepository,
+  UserRepository,
+} from './repositories';
 
 @Module({
-  imports: [],
+  imports: [PostgresModule],
   controllers: [],
-  providers: [],
+  providers: [UserRepository, RoleRepository, SessionRepository],
+  exports: [UserRepository, RoleRepository, SessionRepository],
 })
 export class PersistenceModule {}
