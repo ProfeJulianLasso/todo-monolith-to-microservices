@@ -1,4 +1,8 @@
-import { NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  NotFoundException,
+  NotImplementedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Observable, catchError, from, map } from 'rxjs';
 import { FindManyOptions, FindOptionsWhere, IsNull, Repository } from 'typeorm';
@@ -22,7 +26,7 @@ export class RolePostgresRepository
       this.roleRepository.findBy({ ...where, deletedAt: IsNull() }),
     ).pipe(
       catchError((error) => {
-        throw new Error(error.message);
+        throw new NotImplementedException(error.message);
       }),
     );
   }
@@ -35,7 +39,7 @@ export class RolePostgresRepository
     finalOptions.where = { ...tmpWhere, deletedAt: IsNull() };
     return from(this.roleRepository.find(finalOptions)).pipe(
       catchError((error) => {
-        throw new Error(error.message);
+        throw new NotImplementedException(error.message);
       }),
     );
   }
@@ -47,20 +51,26 @@ export class RolePostgresRepository
       }),
     ).pipe(
       catchError((error) => {
-        throw new Error(error.message);
+        throw new NotImplementedException(error.message);
       }),
       map((role) => {
-        if (!role) throw new Error('Role not found');
+        if (!role) throw new NotFoundException('Role not found');
         return role;
       }),
     );
   }
 
   create(role: RolePostgresEntity): Observable<RolePostgresEntity> {
-    return from(this.roleRepository.save(role)).pipe(
-      catchError((error) => {
-        throw new Error(error.message);
-      }),
+    return from(
+      this.roleRepository
+        .findOneBy({ roleId: role.roleId, deletedAt: IsNull() })
+        .then((roleFound) => {
+          if (!roleFound) throw new ConflictException('Role already exists');
+          return this.roleRepository.save(role);
+        })
+        .catch((error) => {
+          throw new NotImplementedException(error.message);
+        }),
     );
   }
 
@@ -72,7 +82,7 @@ export class RolePostgresRepository
       this.roleRepository
         .findOneBy({ roleId, deletedAt: IsNull() })
         .catch((error) => {
-          throw new Error(error.message);
+          throw new NotImplementedException(error.message);
         })
         .then((roleFound) => {
           if (!roleFound) throw new NotFoundException('Role not found');

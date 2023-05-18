@@ -10,7 +10,7 @@ dotenv.config({
   ),
 });
 
-export default () => ({
+export const Configuration = () => ({
   database: {},
   broker: {},
 });

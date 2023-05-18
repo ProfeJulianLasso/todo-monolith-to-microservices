@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  NotImplementedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Observable, catchError, from, map } from 'rxjs';
 import { FindManyOptions, FindOptionsWhere, Repository } from 'typeorm';
@@ -21,7 +26,7 @@ export class SessionPostgresRepository
   ) {
     return from(this.sessionRepository.findBy(where)).pipe(
       catchError((error) => {
-        throw new Error(error.message);
+        throw new NotImplementedException(error.message);
       }),
     );
   }
@@ -29,7 +34,7 @@ export class SessionPostgresRepository
   findOneBy(...where: any[]): Observable<SessionPostgresEntity> {
     return from(this.sessionRepository.findOneBy(where)).pipe(
       catchError((error) => {
-        throw new Error(error.message);
+        throw new NotImplementedException(error.message);
       }),
       map((session) => {
         if (!session) throw new NotFoundException('Session not found');
@@ -43,16 +48,23 @@ export class SessionPostgresRepository
   ): Observable<SessionPostgresEntity[]> {
     return from(this.sessionRepository.find(options)).pipe(
       catchError((error) => {
-        throw new Error(error.message);
+        throw new NotImplementedException(error.message);
       }),
     );
   }
 
   create(token: SessionPostgresEntity): Observable<SessionPostgresEntity> {
-    return from(this.sessionRepository.save(token)).pipe(
-      catchError((error) => {
-        throw new Error(error.message);
-      }),
+    return from(
+      this.sessionRepository
+        .findOneBy({ token: token.token })
+        .then((tokenFound) => {
+          if (!tokenFound)
+            throw new ConflictException('Session already exists');
+          return this.sessionRepository.save(token);
+        })
+        .catch((error) => {
+          throw new NotImplementedException(error.message);
+        }),
     );
   }
 }

@@ -1,14 +1,17 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import configuration from './config/configuration';
-import { PersistenceModule } from './persistence/persistence.module';
+import { Configuration } from './config';
+import { SecurityController } from './controllers';
+import { EventsModule } from './events';
+import { PersistenceModule } from './persistence';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ load: [configuration], isGlobal: true }),
+    ConfigModule.forRoot({ load: [Configuration], isGlobal: true }),
+    EventsModule,
     PersistenceModule,
   ],
-  controllers: [],
+  controllers: [SecurityController],
   providers: [],
 })
 export class SecurityModule {}

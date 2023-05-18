@@ -53,6 +53,6 @@ export class SignInUseCase
   }
 
   private generateToken(user: UserType): string {
-    return 'Hay que generar un token JWT';
+    return `Hay que generar un token JWT ${user}`;
   }
 }

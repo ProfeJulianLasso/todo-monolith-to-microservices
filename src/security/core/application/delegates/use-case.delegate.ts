@@ -1,6 +1,9 @@
 import { IUseCase } from '@sofkau/ddd';
 import { Observable, tap } from 'rxjs';
-import { ISignedUpPublisher } from '../../domain/events/publishers';
+import {
+  ISignedInPublisher,
+  ISignedUpPublisher,
+} from '../../domain/events/publishers';
 import { SessionRepository, UserRepository } from '../../domain/repositories';
 import { CreateUserCommand, SignInCommand } from '../../domain/types';
 import { SignInUseCase, SignUpUseCase } from '../use-cases';
@@ -15,24 +18,21 @@ export class UseCaseDelegate {
   ) {}
 
   execute<Response>(
-    eventPublisher: ISignedUpPublisher,
+    eventPublisher: ISignedUpPublisher | ISignedInPublisher,
   ): Response | Observable<Response> | Promise<Response> {
     const result = this.delegate.execute(...this.args);
     if (result instanceof Promise) {
       return result.then((data) => {
-        console.log('🗣️ Emitir evento', data);
         eventPublisher.publish(data);
         return data as Promise<Response>;
       });
     } else if (result instanceof Observable) {
       return result.pipe(
         tap((data) => {
-          console.log('🗣️ Emitir evento', data);
           eventPublisher.publish(data);
         }),
       ) as Observable<Response>;
     } else {
-      console.log('🗣️ Emitir evento', result);
       eventPublisher.publish(result);
       return result as Response;
     }

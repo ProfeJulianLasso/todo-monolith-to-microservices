@@ -22,7 +22,9 @@ export class UserIdValueObject extends ValueObjectAbstract<string> {
   }
 
   validateData(): void {
-    const { error } = this.schema.validate({ value: this._value });
-    if (error) this.setError({ field: FIELD_NAME, message: error.message });
+    if (this.schema) {
+      const { error } = this.schema.validate({ value: this._value });
+      if (error) this.setError({ field: FIELD_NAME, message: error.message });
+    }
   }
 }

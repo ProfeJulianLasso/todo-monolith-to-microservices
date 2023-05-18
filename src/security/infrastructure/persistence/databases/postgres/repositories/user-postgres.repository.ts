@@ -1,4 +1,6 @@
-import { NotFoundException } from '@nestjs/common';
+import { status } from '@grpc/grpc-js';
+import { NotFoundException, NotImplementedException } from '@nestjs/common';
+import { RpcException } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Observable, catchError, from, map } from 'rxjs';
 import { FindManyOptions, FindOptionsWhere, IsNull, Repository } from 'typeorm';
@@ -22,7 +24,7 @@ export class UserPostgresRepository
       this.userRepository.findBy({ ...where, deletedAt: IsNull() }),
     ).pipe(
       catchError((error) => {
-        throw new Error(error.message);
+        throw new NotImplementedException(error.message);
       }),
     );
   }
@@ -35,12 +37,13 @@ export class UserPostgresRepository
     return from(
       this.userRepository.findOne({ where: { ...where, deletedAt: IsNull() } }),
     ).pipe(
-      catchError((error) => {
-        throw new Error(error.message);
-      }),
       map((user) => {
         if (!user) throw new NotFoundException('User not found');
         return user;
+      }),
+      catchError((error) => {
+        if (error instanceof NotFoundException) throw error;
+        throw new NotImplementedException(error.message);
       }),
     );
   }
@@ -53,16 +56,31 @@ export class UserPostgresRepository
     finalOptions.where = { ...tmpWhere, deletedAt: IsNull() };
     return from(this.userRepository.find(finalOptions)).pipe(
       catchError((error) => {
-        throw new Error(error.message);
+        if (error instanceof NotFoundException) throw error;
+        throw new NotImplementedException(error.message);
       }),
     );
   }
 
   create(user: UserPostgresEntity): Observable<UserPostgresEntity> {
-    return from(this.userRepository.save(user)).pipe(
-      catchError((error) => {
-        throw new Error(error.message);
-      }),
+    return from(
+      this.userRepository
+        .findOneBy({ userId: user.userId, deletedAt: IsNull() })
+        .then((userFound) => {
+          if (!userFound)
+            throw new RpcException({
+              code: status.ALREADY_EXISTS,
+              message: 'User already exists',
+            });
+          return this.userRepository.save(user);
+        })
+        .catch((error) => {
+          if (error instanceof RpcException) throw error;
+          throw new RpcException({
+            code: status.INTERNAL,
+            message: error.message,
+          });
+        }),
     );
   }
 
@@ -73,9 +91,6 @@ export class UserPostgresRepository
     return from(
       this.userRepository
         .findOneBy({ userId, deletedAt: IsNull() })
-        .catch((error) => {
-          throw new Error(error.message);
-        })
         .then((userFound) => {
           if (!userFound) throw new NotFoundException('User not found');
           return this.userRepository.save({
@@ -84,6 +99,10 @@ export class UserPostgresRepository
             userId,
             updatedAt: new Date(),
           });
+        })
+        .catch((error) => {
+          if (error instanceof NotFoundException) throw error;
+          throw new NotImplementedException(error.message);
         }),
     );
   }
