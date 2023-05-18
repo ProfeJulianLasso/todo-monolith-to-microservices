@@ -1,5 +1,6 @@
+import { status } from '@grpc/grpc-js';
 import { Controller } from '@nestjs/common';
-import { GrpcMethod } from '@nestjs/microservices';
+import { GrpcMethod, RpcException } from '@nestjs/microservices';
 import { Observable, from } from 'rxjs';
 import { UseCaseDelegate } from '../../core/application';
 import {
@@ -35,7 +36,11 @@ export class SecurityController {
       ? result
       : new Observable<CreatedOrUpdatedUserResponse>((subscriber) => {
           subscriber.error(
-            'Error al ejecutar el caso de uso "SignUpUser" porque no hay un Observable como resultado',
+            new RpcException({
+              code: status.INTERNAL,
+              message:
+                'Error al ejecutar el caso de uso "SignUpUser" porque no hay un Observable como resultado',
+            }),
           );
           subscriber.complete();
         });
@@ -50,7 +55,11 @@ export class SecurityController {
       ? from(result)
       : new Observable<SignedInResponse>((subscriber) => {
           subscriber.error(
-            'Error al ejecutar el caso de uso "SignInUser" porque no hay una Promesa como resultado',
+            new RpcException({
+              code: status.INTERNAL,
+              message:
+                'Error al ejecutar el caso de uso "SignInUser" porque no hay una Promesa como resultado',
+            }),
           );
           subscriber.complete();
         });

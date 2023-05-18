@@ -1,9 +1,6 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-  NotImplementedException,
-} from '@nestjs/common';
+import { status } from '@grpc/grpc-js';
+import { Injectable } from '@nestjs/common';
+import { RpcException } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Observable, catchError, from, map } from 'rxjs';
 import { FindManyOptions, FindOptionsWhere, Repository } from 'typeorm';
@@ -26,19 +23,29 @@ export class SessionPostgresRepository
   ) {
     return from(this.sessionRepository.findBy(where)).pipe(
       catchError((error) => {
-        throw new NotImplementedException(error.message);
+        throw new RpcException({
+          code: status.INTERNAL,
+          message: error.message,
+        });
       }),
     );
   }
 
   findOneBy(...where: any[]): Observable<SessionPostgresEntity> {
     return from(this.sessionRepository.findOneBy(where)).pipe(
-      catchError((error) => {
-        throw new NotImplementedException(error.message);
-      }),
       map((session) => {
-        if (!session) throw new NotFoundException('Session not found');
+        if (!session)
+          throw new RpcException({
+            code: status.NOT_FOUND,
+            message: 'Session not found',
+          });
         return session;
+      }),
+      catchError((error) => {
+        throw new RpcException({
+          code: status.INTERNAL,
+          message: error.message,
+        });
       }),
     );
   }
@@ -48,7 +55,10 @@ export class SessionPostgresRepository
   ): Observable<SessionPostgresEntity[]> {
     return from(this.sessionRepository.find(options)).pipe(
       catchError((error) => {
-        throw new NotImplementedException(error.message);
+        throw new RpcException({
+          code: status.INTERNAL,
+          message: error.message,
+        });
       }),
     );
   }
@@ -59,11 +69,18 @@ export class SessionPostgresRepository
         .findOneBy({ token: token.token })
         .then((tokenFound) => {
           if (!tokenFound)
-            throw new ConflictException('Session already exists');
+            throw new RpcException({
+              code: status.ALREADY_EXISTS,
+              message: 'Session already exists',
+            });
           return this.sessionRepository.save(token);
         })
         .catch((error) => {
-          throw new NotImplementedException(error.message);
+          if (error instanceof RpcException) throw error;
+          throw new RpcException({
+            code: status.INTERNAL,
+            message: error.message,
+          });
         }),
     );
   }

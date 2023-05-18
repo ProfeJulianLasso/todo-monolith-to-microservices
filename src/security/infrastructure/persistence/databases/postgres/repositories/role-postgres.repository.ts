@@ -1,8 +1,5 @@
-import {
-  ConflictException,
-  NotFoundException,
-  NotImplementedException,
-} from '@nestjs/common';
+import { status } from '@grpc/grpc-js';
+import { RpcException } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Observable, catchError, from, map } from 'rxjs';
 import { FindManyOptions, FindOptionsWhere, IsNull, Repository } from 'typeorm';
@@ -26,7 +23,10 @@ export class RolePostgresRepository
       this.roleRepository.findBy({ ...where, deletedAt: IsNull() }),
     ).pipe(
       catchError((error) => {
-        throw new NotImplementedException(error.message);
+        throw new RpcException({
+          code: status.INTERNAL,
+          message: error.message,
+        });
       }),
     );
   }
@@ -39,7 +39,10 @@ export class RolePostgresRepository
     finalOptions.where = { ...tmpWhere, deletedAt: IsNull() };
     return from(this.roleRepository.find(finalOptions)).pipe(
       catchError((error) => {
-        throw new NotImplementedException(error.message);
+        throw new RpcException({
+          code: status.INTERNAL,
+          message: error.message,
+        });
       }),
     );
   }
@@ -50,12 +53,19 @@ export class RolePostgresRepository
         where: { roleId, deletedAt: IsNull() },
       }),
     ).pipe(
-      catchError((error) => {
-        throw new NotImplementedException(error.message);
-      }),
       map((role) => {
-        if (!role) throw new NotFoundException('Role not found');
+        if (!role)
+          throw new RpcException({
+            code: status.NOT_FOUND,
+            message: 'User not found',
+          });
         return role;
+      }),
+      catchError((error) => {
+        throw new RpcException({
+          code: status.INTERNAL,
+          message: error.message,
+        });
       }),
     );
   }
@@ -65,11 +75,18 @@ export class RolePostgresRepository
       this.roleRepository
         .findOneBy({ roleId: role.roleId, deletedAt: IsNull() })
         .then((roleFound) => {
-          if (!roleFound) throw new ConflictException('Role already exists');
+          if (!roleFound)
+            throw new RpcException({
+              code: status.ALREADY_EXISTS,
+              message: 'Role already exists',
+            });
           return this.roleRepository.save(role);
         })
         .catch((error) => {
-          throw new NotImplementedException(error.message);
+          throw new RpcException({
+            code: status.INTERNAL,
+            message: error.message,
+          });
         }),
     );
   }
@@ -81,16 +98,24 @@ export class RolePostgresRepository
     return from(
       this.roleRepository
         .findOneBy({ roleId, deletedAt: IsNull() })
-        .catch((error) => {
-          throw new NotImplementedException(error.message);
-        })
         .then((roleFound) => {
-          if (!roleFound) throw new NotFoundException('Role not found');
+          if (!roleFound)
+            throw new RpcException({
+              code: status.NOT_FOUND,
+              message: 'User not found',
+            });
           return this.roleRepository.save({
             ...roleFound,
             ...role,
             roleId,
             updatedAt: new Date(),
+          });
+        })
+        .catch((error) => {
+          if (error instanceof RpcException) throw error;
+          throw new RpcException({
+            code: status.INTERNAL,
+            message: error.message,
           });
         }),
     );

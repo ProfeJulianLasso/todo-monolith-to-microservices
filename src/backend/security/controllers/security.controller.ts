@@ -26,6 +26,10 @@ export class SecurityController {
 
   @Post('login')
   login(@Body() user: SignInCommand): Observable<SignedInResponse> {
-    return this.securityService.Login(user);
+    return this.securityService.Login(user).pipe(
+      catchError((error) => {
+        return throwError(() => new RpcException(error));
+      }),
+    );
   }
 }
