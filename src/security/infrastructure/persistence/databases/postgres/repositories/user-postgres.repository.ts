@@ -76,9 +76,12 @@ export class UserPostgresRepository
   create(user: UserPostgresEntity): Observable<UserPostgresEntity> {
     return from(
       this.userRepository
-        .findOneBy({ userId: user.userId, deletedAt: IsNull() })
+        .findOneBy([
+          { userId: user.userId, deletedAt: IsNull() },
+          { email: user.email, deletedAt: IsNull() },
+        ])
         .then((userFound) => {
-          if (!userFound)
+          if (userFound)
             throw new RpcException({
               code: status.ALREADY_EXISTS,
               message: 'User already exists',

@@ -68,7 +68,7 @@ export class SessionPostgresRepository
       this.sessionRepository
         .findOneBy({ token: token.token })
         .then((tokenFound) => {
-          if (!tokenFound)
+          if (tokenFound)
             throw new RpcException({
               code: status.ALREADY_EXISTS,
               message: 'Session already exists',

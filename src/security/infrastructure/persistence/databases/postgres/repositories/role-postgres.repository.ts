@@ -75,7 +75,7 @@ export class RolePostgresRepository
       this.roleRepository
         .findOneBy({ roleId: role.roleId, deletedAt: IsNull() })
         .then((roleFound) => {
-          if (!roleFound)
+          if (roleFound)
             throw new RpcException({
               code: status.ALREADY_EXISTS,
               message: 'Role already exists',
