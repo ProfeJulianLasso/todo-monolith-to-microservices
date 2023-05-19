@@ -1,5 +1,5 @@
 import { status } from '@grpc/grpc-js';
-import { Controller } from '@nestjs/common';
+import { Controller, UseFilters } from '@nestjs/common';
 import { GrpcMethod, RpcException } from '@nestjs/microservices';
 import { Observable, from } from 'rxjs';
 import { UseCaseDelegate } from '../../core/application';
@@ -10,6 +10,7 @@ import {
   SignedInResponse,
 } from '../../core/domain/types';
 import { SignedInPublisher, SignedUpPublisher } from '../events';
+import { ValueObjectExceptionFilter } from '../exception-filters/value-object.exception-filter';
 import { SessionRepository, UserRepository } from '../persistence';
 
 @Controller()
@@ -27,6 +28,7 @@ export class SecurityController {
     );
   }
 
+  @UseFilters(ValueObjectExceptionFilter)
   @GrpcMethod('SecurityService', 'Register')
   register(data: CreateUserCommand): Observable<CreatedOrUpdatedUserResponse> {
     const result = this.delegate

@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_FILTER } from '@nestjs/core';
 import { Configuration } from './config';
 import { SecurityController } from './controllers';
 import { EventsModule } from './events';
+import { ValueObjectExceptionFilter } from './exception-filters/value-object.exception-filter';
 import { PersistenceModule } from './persistence';
 
 @Module({
@@ -12,6 +14,11 @@ import { PersistenceModule } from './persistence';
     PersistenceModule,
   ],
   controllers: [SecurityController],
-  providers: [],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: ValueObjectExceptionFilter,
+    },
+  ],
 })
 export class SecurityModule {}

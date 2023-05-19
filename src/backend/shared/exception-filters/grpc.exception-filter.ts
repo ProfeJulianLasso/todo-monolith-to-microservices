@@ -42,15 +42,26 @@ export class RpcExceptionFilter implements ExceptionFilter {
     const error = exception.getError();
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    response
-      .status(
-        RpcExceptionFilter.HttpStatusCode[(error as any).code] ??
-          status.UNKNOWN,
-      )
-      .json({
-        code: (error as any).code,
-        message: (error as any).details,
-        details: { message: (error as any).message, other_details: error },
-      });
+
+    // console.log('<==========================>');
+    // console.log('Backend: RpcExceptionFilter');
+    // console.log('Error: ', error);
+    // console.log('<==========================>');
+
+    let statusCode =
+      RpcExceptionFilter.HttpStatusCode[(error as any).code] ?? status.UNKNOWN;
+    let message = (error as any).details;
+    let code = (error as any).code;
+    let details = { message: (error as any).message, other_details: error };
+
+    if ((error as any).code === status.UNKNOWN) {
+      const data = JSON.parse(message);
+      statusCode = RpcExceptionFilter.HttpStatusCode[data.code];
+      code = data.code;
+      message = data.message;
+      details = data.errors;
+    }
+
+    response.status(statusCode).json({ code, message, details });
   }
 }
