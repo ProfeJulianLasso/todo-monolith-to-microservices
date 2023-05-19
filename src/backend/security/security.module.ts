@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule } from '@nestjs/microservices';
 import { gRPCSecurityClientConfig } from '../shared/config';
-import { SecurityController } from './controllers';
+import { LoginController, RegisterController } from './controllers';
 import { SecurityService } from './services';
 
 @Module({
   imports: [ClientsModule.register([gRPCSecurityClientConfig])],
-  controllers: [SecurityController],
+  controllers: [LoginController, RegisterController],
   providers: [SecurityService],
 })
 export class SecurityModule {}

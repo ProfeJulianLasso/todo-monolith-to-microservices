@@ -7,9 +7,11 @@ import { RpcExceptionFilter } from './backend/shared/exception-filters';
 const bootstrap = async () => {
   const app = await NestFactory.create(AppModule);
   app.connectMicroservice<MicroserviceOptions>(gRPCMicroservices);
-  app.useGlobalFilters(new RpcExceptionFilter());
+  // app.connectMicroservice<MicroserviceOptions>(KafkaMicroservices);
   await app.startAllMicroservices();
-  console.log(`🚀 Microservice is running on: http://[::1]:3001`);
+  console.log(`🚀 Microservice gRPC is running on: http://[::1]:3001`);
+  console.log(`🚀 Connected to Kafka on: http://[::1]:9091`);
+  app.useGlobalFilters(new RpcExceptionFilter());
   await app.listen(3000);
   console.log(`🚀 Application is running on: ${await app.getUrl()}`);
 };
