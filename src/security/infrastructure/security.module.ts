@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { Configuration } from './config';
-import { LoginAPI, RegisterAPI } from './controllers';
+import { Configuration } from './configs';
+import { LoginAPI, RegisterAPI } from './api';
 import { PersistenceModule } from './persistence';
 
 @Module({
