@@ -26,10 +26,9 @@ export class SignUpUseCase
     command: CreateUserCommand,
   ): Observable<CreatedOrUpdatedUserResponse> {
     const user = this.validateCommand(command);
-    const userWithRole = this.assignUserRole(user);
-    const newUser = this.aggregateRoot.createUser(userWithRole).toPrimitives();
+    user.role = this.assignUserRole();
+    const newUser = this.getDataForNewUser(user);
     newUser.password = this.hashPassword(newUser.password);
-
     return this.repository.create(newUser).pipe(
       map((user) => {
         return { message: 'User created successfully', data: user };
@@ -42,12 +41,15 @@ export class SignUpUseCase
     return new CreateUserValidator(command).toPrimitives() as UserType;
   }
 
-  private assignUserRole(user: UserType): UserType {
-    user.role = { roleId: Role.USER, name: 'user' } as RoleType;
-    return user;
+  private assignUserRole(): RoleType {
+    return { roleId: Role.USER, name: 'user' } as RoleType;
   }
 
   private hashPassword(password: string): string {
     return crypto.createHash(HASH_ALGORITHM).update(password).digest('hex');
+  }
+
+  private getDataForNewUser(user: UserType): UserType {
+    return this.aggregateRoot.createUser(user).toPrimitives();
   }
 }
