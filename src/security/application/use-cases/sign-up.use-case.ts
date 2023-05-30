@@ -1,4 +1,5 @@
 import { IUseCase } from '@sofkau/ddd';
+import crypto from 'node:crypto';
 import { Observable, map } from 'rxjs';
 import { UserAggregateRoot } from '../../domain/aggregates';
 import { CreateUserCommand, CreateUserValidator } from '../../domain/commands';
@@ -9,6 +10,8 @@ import {
   RoleType,
   UserType,
 } from '../../domain/types';
+
+const HASH_ALGORITHM = 'sha512';
 
 export class SignUpUseCase
   implements IUseCase<CreateUserCommand, CreatedOrUpdatedUserResponse>
@@ -22,15 +25,29 @@ export class SignUpUseCase
   execute(
     command: CreateUserCommand,
   ): Observable<CreatedOrUpdatedUserResponse> {
-    command.roleId = Role.USER;
-    const user = new CreateUserValidator(command).toPrimitives() as UserType;
-    user.role = { roleId: command.roleId, name: 'user' } as RoleType;
+    const user = this.validateCommand(command);
+    const userWithRole = this.assignUserRole(user);
+    const newUser = this.aggregateRoot.createUser(userWithRole).toPrimitives();
+    newUser.password = this.hashPassword(newUser.password);
 
-    const newUser = this.aggregateRoot.createUser(user);
-    return this.repository.create(newUser.toPrimitives()).pipe(
+    return this.repository.create(newUser).pipe(
       map((user) => {
         return { message: 'User created successfully', data: user };
       }),
     );
+  }
+
+  private validateCommand(command: CreateUserCommand): UserType {
+    command.roleId = Role.USER;
+    return new CreateUserValidator(command).toPrimitives() as UserType;
+  }
+
+  private assignUserRole(user: UserType): UserType {
+    user.role = { roleId: Role.USER, name: 'user' } as RoleType;
+    return user;
+  }
+
+  private hashPassword(password: string): string {
+    return crypto.createHash(HASH_ALGORITHM).update(password).digest('hex');
   }
 }

@@ -1,9 +1,7 @@
 import { ValueObjectAbstract } from '@sofkau/ddd';
 import * as Joi from 'joi';
-import crypto from 'node:crypto';
 
 const FIELD_NAME = 'password';
-const HASH_ALGORITHM = 'sha512';
 const PASSWORD_REGEX = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
 
 export class PasswordValueObject extends ValueObjectAbstract<string> {
@@ -24,10 +22,5 @@ export class PasswordValueObject extends ValueObjectAbstract<string> {
       });
     const { error } = this.schema.validate({ value: this._value });
     if (error) this.setError({ field: FIELD_NAME, message: error.message });
-  }
-
-  valueOf(): string {
-    const value = this._value.slice();
-    return crypto.createHash(HASH_ALGORITHM).update(value).digest('hex');
   }
 }
