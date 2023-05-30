@@ -4,7 +4,7 @@ import { RpcException } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Observable, catchError, from, map } from 'rxjs';
 import { FindManyOptions, FindOptionsWhere, Repository } from 'typeorm';
-import { SessionRepository } from '../../../../../core/domain/repositories';
+import { SessionRepository } from '../../../../../domain/interfaces/repositories';
 import { SessionPostgresEntity } from '../entities';
 
 @Injectable()

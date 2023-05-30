@@ -6,7 +6,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { UserType } from '../../../../../core/domain/types';
+import { UserType } from '../../../../../domain/types';
 import { RolePostgresEntity } from './role-postgres.entity';
 import { SessionPostgresEntity } from './session-postgres.entity';
 

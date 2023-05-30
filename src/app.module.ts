@@ -1,11 +1,16 @@
 import { Module } from '@nestjs/common';
-import { BackendModule } from './backend/backend.module';
+import { APP_FILTER } from '@nestjs/core';
+import { ValueObjectFilter } from './common';
 import { SecurityModule } from './security/infrastructure/security.module';
-import { TodoModule } from './todo/infrastructure/todo.module';
 
 @Module({
-  imports: [BackendModule, SecurityModule, TodoModule],
+  imports: [SecurityModule],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: ValueObjectFilter,
+    },
+  ],
 })
 export class AppModule {}

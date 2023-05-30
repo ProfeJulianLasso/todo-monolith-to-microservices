@@ -1,14 +1,8 @@
 import { RoleEntity, UserEntity } from '../entities';
-import { Role } from '../enums';
 import { RoleType, UserType } from '../types/entities';
 
 export class UserAggregateRoot {
   createUser(user: UserType): UserEntity {
-    const role = new RoleEntity({
-      roleId: Role.USER,
-      name: 'user',
-    } as RoleType);
-    user.role = role.toPrimitives();
     return new UserEntity(user);
   }
 

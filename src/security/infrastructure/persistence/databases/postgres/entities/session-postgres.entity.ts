@@ -1,5 +1,5 @@
 import { Column, Entity, Index, JoinColumn, OneToOne } from 'typeorm';
-import { SessionType } from '../../../../../core/domain/types';
+import { SessionType } from '../../../../../domain/types';
 import { UserPostgresEntity } from './user-postgres.entity';
 
 @Index('session_pk', ['token'], { unique: true })

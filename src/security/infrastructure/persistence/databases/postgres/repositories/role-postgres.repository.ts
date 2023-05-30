@@ -3,7 +3,7 @@ import { RpcException } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Observable, catchError, from, map } from 'rxjs';
 import { FindManyOptions, FindOptionsWhere, IsNull, Repository } from 'typeorm';
-import { RoleRepository } from '../../../../../core/domain/repositories';
+import { RoleRepository } from '../../../../../domain/interfaces/repositories';
 import { RolePostgresEntity } from '../entities';
 
 export class RolePostgresRepository

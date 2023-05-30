@@ -1,12 +1,14 @@
 import { IUseCase } from '@sofkau/ddd';
 import { Observable, map } from 'rxjs';
 import { UserAggregateRoot } from '../../domain/aggregates';
-import { UserRepository } from '../../domain/repositories';
+import { CreateUserCommand, CreateUserValidator } from '../../domain/commands';
+import { Role } from '../../domain/enums';
+import { UserRepository } from '../../domain/interfaces/repositories';
 import {
-  CreateUserCommand,
   CreatedOrUpdatedUserResponse,
+  RoleType,
+  UserType,
 } from '../../domain/types';
-import { UserType } from '../../domain/types/entities';
 
 export class SignUpUseCase
   implements IUseCase<CreateUserCommand, CreatedOrUpdatedUserResponse>
@@ -20,8 +22,12 @@ export class SignUpUseCase
   execute(
     command: CreateUserCommand,
   ): Observable<CreatedOrUpdatedUserResponse> {
-    const user = this.aggregateRoot.createUser(command as UserType);
-    return this.repository.create(user.toPrimitives()).pipe(
+    command.roleId = Role.USER;
+    const user = new CreateUserValidator(command).toPrimitives() as UserType;
+    user.role = { roleId: command.roleId, name: 'user' } as RoleType;
+
+    const newUser = this.aggregateRoot.createUser(user);
+    return this.repository.create(newUser.toPrimitives()).pipe(
       map((user) => {
         return { message: 'User created successfully', data: user };
       }),

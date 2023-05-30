@@ -5,7 +5,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { RoleType } from '../../../../../core/domain/types';
+import { RoleType } from '../../../../../domain/types';
 import { UserPostgresEntity } from './user-postgres.entity';
 
 @Index('role_name_index', ['name', 'deletedAt'], { unique: true })

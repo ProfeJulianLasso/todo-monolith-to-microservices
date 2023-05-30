@@ -1,9 +1,13 @@
 import { IUseCase } from '@sofkau/ddd';
 import { lastValueFrom } from 'rxjs';
 import { UserAggregateRoot } from '../../domain/aggregates';
+import { SignInCommand } from '../../domain/commands';
 import { SessionEntity } from '../../domain/entities/session.entity';
-import { SessionRepository, UserRepository } from '../../domain/repositories';
-import { SignInCommand, SignedInResponse, UserType } from '../../domain/types';
+import {
+  SessionRepository,
+  UserRepository,
+} from '../../domain/interfaces/repositories';
+import { SignedInResponse, UserType } from '../../domain/types';
 import {
   EmailValueObject,
   PasswordValueObject,
