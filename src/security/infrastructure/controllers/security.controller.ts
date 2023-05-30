@@ -2,13 +2,13 @@ import { status } from '@grpc/grpc-js';
 import { Controller, UseFilters } from '@nestjs/common';
 import { GrpcMethod, RpcException } from '@nestjs/microservices';
 import { Observable, from } from 'rxjs';
-import { UseCaseDelegate } from '../../core/application';
+import { UseCaseDelegate } from '../../application';
 import {
   CreateUserCommand,
   CreatedOrUpdatedUserResponse,
   SignInCommand,
   SignedInResponse,
-} from '../../core/domain/types';
+} from '../../domain/types';
 import { SignedInPublisher, SignedUpPublisher } from '../events';
 import { ValueObjectExceptionFilter } from '../exception-filters/value-object.exception-filter';
 import { SessionRepository, UserRepository } from '../persistence';
