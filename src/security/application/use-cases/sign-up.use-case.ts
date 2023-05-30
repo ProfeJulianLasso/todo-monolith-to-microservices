@@ -30,7 +30,9 @@ export class SignUpUseCase
     const newUser = this.getDataForNewUser(user);
     newUser.password = this.hashPassword(newUser.password);
     return this.repository.create(newUser).pipe(
-      map((user) => {
+      map((user: Partial<UserType>) => {
+        delete user.password;
+        delete user.role;
         return { message: 'User created successfully', data: user };
       }),
     );

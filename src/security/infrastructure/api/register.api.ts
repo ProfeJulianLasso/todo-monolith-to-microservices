@@ -1,5 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { SignUpUseCase } from 'src/security/application';
 import { CreatedOrUpdatedUserResponse } from '../../domain/types';
 import { CreateUserCommand } from '../commands';
@@ -17,6 +17,12 @@ export class RegisterAPI {
   execute(
     @Body() data: CreateUserCommand,
   ): Observable<CreatedOrUpdatedUserResponse> {
-    return this.useCase.execute(data);
+    return this.useCase.execute(data).pipe(
+      map((response) => {
+        delete (response.data as any).updateAt;
+        delete (response.data as any).deletedAt;
+        return response;
+      }),
+    );
   }
 }
